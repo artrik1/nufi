@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Novita!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF4E9;
+    --peach:#FFD9C4;
+    --rose:#F2949F;
+    --plum:#5B3247;
+    --plum-deep:#3E2233;
+    --gold:#F6C667;
+    --line-length:60ch;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:linear-gradient(180deg,var(--cream) 0%, var(--peach) 60%, #FFC9A8 100%);
+    font-family:'Poppins',sans-serif;
+    color:var(--plum-deep);
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- GATE ---------- */
+  #gate{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    background:radial-gradient(circle at 50% 30%, #6B3B54 0%, var(--plum-deep) 70%);
+    color:var(--cream);
+    text-align:center;
+    padding:32px;
+    transition:opacity .8s ease, visibility .8s ease;
+  }
+  #gate.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  #gate p.eyebrow{
+    margin:0;
+    letter-spacing:.04em;
+    font-size:15px;
+    color:var(--gold);
+    font-weight:400;
+  }
+  #gate h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:clamp(28px,6vw,42px);
+    margin:0;
+    max-width:14ch;
+    line-height:1.15;
+  }
+  #openBtn{
+    font-family:'Poppins',sans-serif;
+    font-size:16px;
+    font-weight:500;
+    color:var(--plum-deep);
+    background:var(--gold);
+    border:none;
+    padding:16px 34px;
+    border-radius:40px;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  #openBtn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.3);}
+  #openBtn:active{transform:translateY(0);}
+
+  /* ---------- BALLOON LAYER ---------- */
+  .balloon-layer{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:5;
+  }
+  .balloon{
+    position:absolute;
+    bottom:-160px;
+    width:44px;
+    height:56px;
+    border-radius:50% 50% 50% 50% / 58% 58% 42% 42%;
+    opacity:.85;
+    animation:float linear infinite;
+    box-shadow:inset -6px -6px 10px rgba(0,0,0,.12), inset 6px 6px 10px rgba(255,255,255,.35);
+  }
+  .balloon::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:100%;
+    width:1px;
+    height:60px;
+    background:rgba(91,50,71,.35);
+    transform:translateX(-50%);
+  }
+  .balloon::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:96%;
+    width:6px;
+    height:6px;
+    background:inherit;
+    transform:translateX(-50%) rotate(45deg);
+  }
+  @keyframes float{
+    0%{transform:translateY(0) rotate(0deg) scale(var(--s,1));}
+    50%{transform:translateY(-55vh) rotate(6deg) scale(var(--s,1));}
+    100%{transform:translateY(-115vh) rotate(-4deg) scale(var(--s,1));}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .balloon{animation:none;display:none;}
+  }
+
+  /* ---------- CONTENT ---------- */
+  main{
+    position:relative;
+    z-index:10;
+    max-width:640px;
+    margin:0 auto;
+    padding:72px 24px 96px;
+  }
+  .hat{
+    display:block;
+    text-align:center;
+    font-size:52px;
+    margin:0 auto 18px;
+    line-height:1;
+  }
+  h1.title{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:500;
+    text-align:center;
+    font-size:clamp(34px,7vw,54px);
+    color:var(--rose);
+    margin:0 0 4px;
+  }
+  h2.subtitle{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    text-align:center;
+    font-size:clamp(18px,3.4vw,22px);
+    color:var(--plum);
+    margin:0 0 48px;
+    font-weight:400;
+  }
+  .to-line{
+    text-align:center;
+    font-size:14px;
+    letter-spacing:.06em;
+    color:var(--rose);
+    margin-bottom:6px;
+  }
+  .name{
+    text-align:center;
+    font-family:'Fraunces',serif;
+    font-size:clamp(24px,5vw,32px);
+    color:var(--plum-deep);
+    margin:0 0 44px;
+  }
+
+  .photo-wrap{
+    display:flex;
+    justify-content:center;
+    margin:0 0 48px;
+  }
+  .photo-wrap img{
+    width:220px;
+    height:220px;
+    object-fit:cover;
+    border-radius:50%;
+    border:6px solid #fff;
+    box-shadow:0 14px 34px rgba(91,50,71,.25);
+  }
+
+  .message{
+    position:relative;
+    background:rgba(255,255,255,.55);
+    border-radius:24px;
+    max-width:var(--line-length);
+    margin:0 auto 24px;
+    min-height:170px;
+    overflow:hidden;
+    cursor:pointer;
+    user-select:none;
+  }
+  .progress-row{
+    display:flex;
+    gap:5px;
+    padding:14px 16px 0;
+  }
+  .progress-track{
+    flex:1;
+    height:3px;
+    border-radius:3px;
+    background:rgba(91,50,71,.18);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--rose);
+    border-radius:3px;
+  }
+  .progress-fill.filling{
+    transition:width 4.5s linear;
+    width:100%;
+  }
+  .progress-fill.filled{
+    width:100%;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    padding:40px 30px 30px;
+    line-height:1.8;
+    font-size:16px;
+    color:var(--plum-deep);
+    display:flex;
+    align-items:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .35s ease;
+  }
+  .slide.active{
+    opacity:1;
+    pointer-events:auto;
+    position:relative;
+  }
+  .slide p{margin:0;}
+  .slide .typed::after{
+    content:"|";
+    margin-left:2px;
+    color:var(--rose);
+    animation:blink 1s step-start infinite;
+  }
+  .slide.done .typed::after{display:none;}
+  @keyframes blink{50%{opacity:0;}}
+  .message .highlight{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    color:var(--rose);
+  }
+  .tap-zones{
+    position:absolute;
+    inset:0;
+    display:flex;
+  }
+  .tap-zones span{flex:1;}
+
+  .signature{
+    text-align:center;
+    margin-top:56px;
+  }
+  .signature .from{
+    font-size:14px;
+    letter-spacing:.05em;
+    color:var(--plum);
+    margin-bottom:6px;
+  }
+  .signature .sender{
+    font-family:'Fraunces',serif;
+    font-size:22px;
+    color:var(--plum-deep);
+  }
+  .miss-you{
+    text-align:center;
+    margin-top:28px;
+    font-size:13px;
+    letter-spacing:.12em;
+    color:var(--rose);
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <p class="eyebrow">sebuah kejutan kecil untuk</p>
+    <h1>Novita Putri Wulandari</h1>
+    <button id="openBtn">Ketuk untuk membuka 🎈</button>
+  </div>
+
+  <div class="balloon-layer" id="balloonLayer"></div>
+
+  <main>
+    <div class="hat" aria-hidden="true">🎉</div>
+    <h1 class="title">Happy Birthday!!</h1>
+    <h2 class="subtitle">wish you all the best :)</h2>
+
+    <p class="to-line">untuk</p>
+    <p class="name">Novita Putri Wulandari</p>
+
+    <div class="photo-wrap">
+      <img src="foto-novita.jpeg" alt="Novita Putri Wulandari">
+    </div>
+
+    <div class="message" id="message">
+      <div class="progress-row" id="progressRow"></div>
+      <div class="slide active" data-text="Selamat ulang tahun, Novita :)"><p><span class="typed"></span></p></div>
+      <div class="slide" data-text="Semoga di umur yang baru ini, semua yang kamu harapkan pelan-pelan tercapai. Jangan galau terus, kalau butuh bantuan atau cuma butuh teman cerita, aku di sini kok, tinggal bilang aja."><p><span class="typed"></span></p></div>
+      <div class="slide" data-text="Kadang aku cuma pengen bilang, senang banget punya teman dekat kayak kamu. Rasanya jadi lebih semangat kalau lagi dekat sama orang yang baik."><p><span class="typed"></span></p></div>
+      <div class="slide" data-text="Sekali-sekali kasih kejutan yang beda dari biasanya, biar hari ulang tahunmu diingat terus :)"><p><span class="typed"></span></p></div>
+      <div class="slide" data-text="Sekali lagi, happy birthday. Semoga sehat selalu, bahagia terus, dan makin sukses ke depannya."><p><span class="typed"></span></p></div>
+      <div class="tap-zones"><span id="tapPrev"></span><span id="tapNext"></span></div>
+    </div>
+
+    <div class="signature">
+      <div class="from">dari</div>
+      <div class="sender">Imam Ahmad Al Malikuz Zahir</div>
+    </div>
+    <p class="miss-you">MISS YOU.....</p>
+  </main>
+
+  <audio id="bgMusic" src="hbd.mp3" loop></audio>
+
+  <script>
+    // Buat balon-balon beterbangan
+    const layer = document.getElementById('balloonLayer');
+    const balloonColors = ['#F2949F', '#F6C667', '#FFB6A3', '#E8829B', '#F7D488'];
+    const totalBalloons = 18;
+    for(let i=0;i<totalBalloons;i++){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.background = balloonColors[i % balloonColors.length];
+      const left = Math.random()*94;
+      const duration = 9 + Math.random()*8;
+      const delay = Math.random()*10;
+      const scale = 0.7 + Math.random()*0.9;
+      b.style.left = left+'vw';
+      b.style.setProperty('--s', scale);
+      b.style.animationDuration = duration+'s';
+      b.style.animationDelay = '-'+delay+'s';
+      layer.appendChild(b);
+    }
+
+    // Gate: klik sekali langsung buka halaman + nyalakan musik, tanpa dialog konfirmasi apapun
+    const gate = document.getElementById('gate');
+    const openBtn = document.getElementById('openBtn');
+    const music = document.getElementById('bgMusic');
+
+    openBtn.addEventListener('click', () => {
+      music.volume = 0.8;
+      music.play().catch(()=>{ /* diam saja jika browser tetap menahan, tidak menampilkan dialog apapun */ });
+      gate.classList.add('hidden');
+    }, { once:true });
+
+    // Story pesan: progress bar otomatis + efek mengetik + tap kiri/kanan
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const progressRow = document.getElementById('progressRow');
+    let current = 0;
+    let typeTimer = null;
+    let advanceTimer = null;
+    const SLIDE_MS = 4500;
+
+    slides.forEach(() => {
+      const track = document.createElement('div');
+      track.className = 'progress-track';
+      const fill = document.createElement('div');
+      fill.className = 'progress-fill';
+      track.appendChild(fill);
+      progressRow.appendChild(track);
+    });
+    const fills = Array.from(progressRow.querySelectorAll('.progress-fill'));
+
+    function typeText(slide, onDone){
+      const span = slide.querySelector('.typed');
+      const text = slide.getAttribute('data-text');
+      span.textContent = '';
+      slide.classList.remove('done');
+      let i = 0;
+      clearInterval(typeTimer);
+      typeTimer = setInterval(() => {
+        span.textContent = text.slice(0, i+1);
+        i++;
+        if(i >= text.length){
+          clearInterval(typeTimer);
+          slide.classList.add('done');
+          if(onDone) onDone();
+        }
+      }, 22);
+    }
+
+    function showSlide(index, restartOnly){
+      current = (index + slides.length) % slides.length;
+
+      slides.forEach((s,i) => s.classList.toggle('active', i === current));
+
+      fills.forEach((f,i) => {
+        f.classList.remove('filling');
+        if(i < current){
+          f.classList.add('filled');
+          f.style.width = '100%';
+        } else {
+          f.classList.remove('filled');
+          f.style.width = '0%';
+        }
+      });
+
+      clearTimeout(advanceTimer);
+      clearInterval(typeTimer);
+
+      typeText(slides[current], () => {
+        const f = fills[current];
+        // eslint-disable-next-line no-unused-expressions
+        f.offsetWidth; // reflow agar transisi width jalan
+        f.classList.add('filling');
+      });
+
+      advanceTimer = setTimeout(() => showSlide(current+1), SLIDE_MS);
+    }
+
+    document.getElementById('tapNext').addEventListener('click', () => showSlide(current+1));
+    document.getElementById('tapPrev').addEventListener('click', () => showSlide(current-1));
+
+    showSlide(0);
+  </script>
+</body>
+</html>
