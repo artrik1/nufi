@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Novita!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF4E9;
+    --peach:#FFD9C4;
+    --rose:#F2949F;
+    --plum:#5B3247;
+    --plum-deep:#3E2233;
+    --gold:#F6C667;
+    --line-length:56ch;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    height:100vh;
+    background:linear-gradient(180deg,var(--cream) 0%, var(--peach) 60%, #FFC9A8 100%);
+    font-family:'Quicksand',sans-serif;
+    color:var(--plum-deep);
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* ---------- GATE ---------- */
+  #gate{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    background:radial-gradient(circle at 50% 30%, #6B3B54 0%, var(--plum-deep) 70%);
+    color:var(--cream);
+    text-align:center;
+    padding:32px;
+    transition:opacity .8s ease, visibility .8s ease;
+  }
+  #gate.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  #gate p.eyebrow{
+    margin:0;
+    letter-spacing:.04em;
+    font-size:15px;
+    color:var(--gold);
+    font-weight:400;
+  }
+  #gate h1{
+    font-family:'Playfair Display',serif;
+    font-weight:500;
+    font-size:clamp(28px,6vw,42px);
+    margin:0;
+    max-width:14ch;
+    line-height:1.15;
+  }
+  #openBtn{
+    font-family:'Quicksand',sans-serif;
+    font-size:16px;
+    font-weight:500;
+    color:var(--plum-deep);
+    background:var(--gold);
+    border:none;
+    padding:16px 34px;
+    border-radius:40px;
+    cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  #openBtn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.3);}
+  #openBtn:active{transform:translateY(0);}
+
+  /* ---------- BALLOON LAYER ---------- */
+  .balloon-layer{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:5;
+  }
+  .balloon{
+    position:absolute;
+    bottom:-160px;
+    width:44px;
+    height:56px;
+    border-radius:50% 50% 50% 50% / 58% 58% 42% 42%;
+    opacity:.85;
+    animation:float linear infinite;
+    box-shadow:inset -6px -6px 10px rgba(0,0,0,.12), inset 6px 6px 10px rgba(255,255,255,.35);
+  }
+  .balloon::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:100%;
+    width:1px;
+    height:60px;
+    background:rgba(91,50,71,.35);
+    transform:translateX(-50%);
+  }
+  .balloon::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:96%;
+    width:6px;
+    height:6px;
+    background:inherit;
+    transform:translateX(-50%) rotate(45deg);
+  }
+  @keyframes float{
+    0%{transform:translateY(0) rotate(0deg) scale(var(--s,1));}
+    50%{transform:translateY(-55vh) rotate(6deg) scale(var(--s,1));}
+    100%{transform:translateY(-115vh) rotate(-4deg) scale(var(--s,1));}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .balloon{animation:none;display:none;}
+  }
+
+  /* ---------- STORY / PRESENTATION ---------- */
+  #story{
+    position:fixed;
+    inset:0;
+    z-index:10;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 28px 40px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .5s ease;
+  }
+  .slide.active{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .slide .hat{
+    font-size:64px;
+    line-height:1;
+    margin:0 0 20px;
+  }
+  .slide h1.title{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-weight:800;
+    font-size:clamp(44px,11vw,72px);
+    color:var(--rose);
+    margin:0 0 10px;
+  }
+  .slide h2.subtitle{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:clamp(20px,4.6vw,28px);
+    color:var(--plum);
+    margin:0 0 44px;
+  }
+  .slide .to-line{
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:.1em;
+    color:var(--rose);
+    margin:0 0 8px;
+  }
+  .slide .name{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:clamp(30px,8vw,44px);
+    color:var(--plum-deep);
+    margin:0;
+  }
+
+  .slide .msg{
+    max-width:var(--line-length);
+    font-size:clamp(20px,5vw,28px);
+    font-weight:500;
+    line-height:1.7;
+    color:var(--plum-deep);
+  }
+  .slide .typed::after{
+    content:"|";
+    margin-left:2px;
+    color:var(--rose);
+    animation:blink 1s step-start infinite;
+  }
+  .slide.done .typed::after{display:none;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .slide .photo-wrap{
+    margin:0 0 28px;
+  }
+  .slide .photo-wrap img{
+    width:180px;
+    height:180px;
+    object-fit:cover;
+    border-radius:50%;
+    border:6px solid #fff;
+    box-shadow:0 14px 34px rgba(91,50,71,.25);
+  }
+  .slide .signature{
+    margin-top:30px;
+  }
+  .slide .signature .from{
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:.06em;
+    color:var(--plum);
+    margin-bottom:6px;
+  }
+  .slide .signature .sender{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:26px;
+    color:var(--plum-deep);
+  }
+  .slide .miss-you{
+    margin-top:20px;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:.14em;
+    color:var(--rose);
+  }
+
+  .tap-zones{
+    position:fixed;
+    inset:0;
+    display:flex;
+    z-index:20;
+  }
+  .tap-zones span{flex:1;}
+
+  @media (max-width:480px){
+    .slide{padding:32px 20px 32px;}
+    .slide .photo-wrap img{width:150px;height:150px;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <p class="eyebrow">sebuah kejutan kecil untuk</p>
+    <h1>Novita Putri Wulandari</h1>
+    <button id="openBtn">Ketuk untuk membuka 🎈</button>
+  </div>
+
+  <div class="balloon-layer" id="balloonLayer"></div>
+
+  <div id="story">
+
+    <div class="slide active" data-type="static">
+      <div class="hat" aria-hidden="true">🎉</div>
+      <h1 class="title">Happy Birthday!!</h1>
+      <h2 class="subtitle">wish you all the best :)</h2>
+      <p class="to-line">untuk</p>
+      <p class="name">Novita Putri Wulandari</p>
+    </div>
+
+    <div class="slide" data-type="typed" data-text="Selamat ulang tahun, Novita :)">
+      <p class="msg"><span class="typed"></span></p>
+    </div>
+
+    <div class="slide" data-type="typed" data-text="Semoga di umur yang baru ini, semua yang kamu harapkan pelan-pelan tercapai. Jangan galau terus, kalau butuh bantuan atau cuma butuh teman cerita, aku di sini kok, tinggal bilang aja.">
+      <p class="msg"><span class="typed"></span></p>
+    </div>
+
+    <div class="slide" data-type="typed" data-text="Kadang aku cuma pengen bilang, senang banget punya teman dekat kayak kamu. Rasanya jadi lebih semangat kalau lagi dekat sama orang yang baik.">
+      <p class="msg"><span class="typed"></span></p>
+    </div>
+
+    <div class="slide" data-type="typed" data-text="Sekali-sekali kasih kejutan yang beda dari biasanya, biar hari ulang tahunmu diingat terus :)">
+      <p class="msg"><span class="typed"></span></p>
+    </div>
+
+    <div class="slide" data-type="static">
+      <div class="photo-wrap">
+        <img src="foto-novita.jpeg" alt="Novita Putri Wulandari">
+      </div>
+      <p class="msg">Sekali lagi, happy birthday. Semoga sehat selalu, bahagia terus, dan makin sukses ke depannya.</p>
+      <div class="signature">
+        <div class="from">dari</div>
+        <div class="sender">Imam Ahmad Al Malikuz Zahir</div>
+      </div>
+      <p class="miss-you">MISS YOU.....</p>
+    </div>
+
+    <div class="tap-zones"><span id="tapPrev"></span><span id="tapNext"></span></div>
+  </div>
+
+  <audio id="bgMusic" src="hbd.mp3" loop></audio>
+
+  <script>
+    // Buat balon-balon beterbangan
+    const layer = document.getElementById('balloonLayer');
+    const balloonColors = ['#F2949F', '#F6C667', '#FFB6A3', '#E8829B', '#F7D488'];
+    const totalBalloons = 18;
+    for(let i=0;i<totalBalloons;i++){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.background = balloonColors[i % balloonColors.length];
+      const left = Math.random()*94;
+      const duration = 9 + Math.random()*8;
+      const delay = Math.random()*10;
+      const scale = 0.7 + Math.random()*0.9;
+      b.style.left = left+'vw';
+      b.style.setProperty('--s', scale);
+      b.style.animationDuration = duration+'s';
+      b.style.animationDelay = '-'+delay+'s';
+      layer.appendChild(b);
+    }
+
+    // Gate: klik sekali langsung buka halaman + nyalakan musik, tanpa dialog konfirmasi apapun
+    const gate = document.getElementById('gate');
+    const openBtn = document.getElementById('openBtn');
+    const music = document.getElementById('bgMusic');
+
+    openBtn.addEventListener('click', () => {
+      music.volume = 0.8;
+      music.play().catch(()=>{ /* diam saja jika browser tetap menahan, tidak menampilkan dialog apapun */ });
+      gate.classList.add('hidden');
+    }, { once:true });
+
+    // Presentasi full-layar: efek mengetik (untuk slide pesan) + auto-lanjut + tap kiri/kanan
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let current = 0;
+    let typeTimer = null;
+    let advanceTimer = null;
+    const TYPE_MS = 55;          // kecepatan ketik per huruf
+    const READ_PAUSE_MS = 2800;  // jeda baca setelah teks tampil, sebelum pindah
+    const STATIC_PAUSE_MS = 4200; // lama tampil untuk slide statis (judul & slide foto terakhir)
+
+    function typeText(slide, onDone){
+      const span = slide.querySelector('.typed');
+      const text = slide.getAttribute('data-text');
+      span.textContent = '';
+      slide.classList.remove('done');
+      let i = 0;
+      clearInterval(typeTimer);
+      typeTimer = setInterval(() => {
+        span.textContent = text.slice(0, i+1);
+        i++;
+        if(i >= text.length){
+          clearInterval(typeTimer);
+          slide.classList.add('done');
+          if(onDone) onDone();
+        }
+      }, TYPE_MS);
+    }
+
+    function showSlide(index){
+      current = Math.max(0, Math.min(index, slides.length-1));
+
+      slides.forEach((s,i) => s.classList.toggle('active', i === current));
+
+      clearTimeout(advanceTimer);
+      clearInterval(typeTimer);
+
+      const slide = slides[current];
+      const isLastSlide = current === slides.length - 1;
+
+      const scheduleAdvance = (pauseMs) => {
+        if(!isLastSlide){
+          advanceTimer = setTimeout(() => showSlide(current+1), pauseMs);
+        }
+      };
+
+      if(slide.getAttribute('data-type') === 'typed'){
+        typeText(slide, () => scheduleAdvance(READ_PAUSE_MS));
+      } else {
+        scheduleAdvance(STATIC_PAUSE_MS);
+      }
+    }
+
+    document.getElementById('tapNext').addEventListener('click', () => {
+      if(current < slides.length - 1) showSlide(current+1);
+    });
+    document.getElementById('tapPrev').addEventListener('click', () => {
+      if(current > 0) showSlide(current-1);
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
