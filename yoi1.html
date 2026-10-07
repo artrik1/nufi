@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gambar ke PDF</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#eef1f6;--ink:#101a33;--mute:#5d6882;--card:#fff;--line:#cfd6e4;--acc:#2447f5;--acc-ink:#fff;--err:#c2271d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1324;--ink:#e8ecf7;--mute:#9aa6c4;--card:#161e36;--line:#2c3757;--acc:#6f8bff;--acc-ink:#0d1324;--err:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0d1324;--ink:#e8ecf7;--mute:#9aa6c4;--card:#161e36;--line:#2c3757;--acc:#6f8bff;--acc-ink:#0d1324;--err:#ff8a80}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:0 0 8px}
+.sub{color:var(--mute);margin:0 0 28px;max-width:52ch}
+#drop{display:block;border:2px dashed var(--line);border-radius:20px;background:var(--card);padding:44px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+#drop:hover,#drop:focus-within,#drop.over{border-color:var(--acc)}
+#drop.over{background:color-mix(in srgb,var(--acc) 8%,var(--card))}
+#drop strong{display:block;font-size:1.25rem}
+#drop span{color:var(--mute);font-size:.95rem}
+#drop input{position:absolute;opacity:0;width:1px;height:1px}
+#drop:focus-within{outline:3px solid var(--acc);outline-offset:3px}
+.bar{display:flex;flex-wrap:wrap;gap:16px;align-items:end;margin:28px 0 16px}
+.bar label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mute);font-weight:600}
+select,input[type=text]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:150px}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px}
+button:hover{border-color:var(--acc)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);padding:12px 22px;font-size:1.05rem}
+button.primary:disabled{opacity:.45;cursor:not-allowed}
+.sp{flex:1}
+#list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#list li{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+#list li.drag{opacity:.4}
+#list li.target{border-color:var(--acc)}
+.pg{font-weight:800;width:2ch;text-align:center;color:var(--mute)}
+#list img{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--bg)}
+.meta{flex:1;min-width:0}
+.meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta small{color:var(--mute)}
+.acts{display:flex;gap:6px}
+.acts button{padding:6px 10px}
+.handle{cursor:grab;color:var(--mute);user-select:none;font-size:1.2rem}
+.prog{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:16px}
+.prog[hidden]{display:none}
+.prog>div{height:100%;width:0;background:var(--acc);border-radius:99px;transition:width .2s}
+#status{margin:8px 0 0;min-height:1.5em;color:var(--mute)}
+#status.err{color:var(--err)}
+.done{display:none;margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.done.show{display:block}
+</style>
+</head>
+<body>
+<main>
+<h1>Gambar ke PDF</h1>
+<p class="sub">Gabungkan banyak gambar menjadi satu file PDF. Semua diproses di perangkat Anda, tidak ada yang diunggah.</p>
+
+<label id="drop">
+  <input id="file" type="file" accept="image/*" multiple>
+  <strong>Pilih gambar atau seret ke sini</strong>
+  <span>JPG, PNG, WEBP, GIF, BMP, SVG. Bisa pilih banyak sekaligus.</span>
+</label>
+
+<div class="bar" id="opts" hidden>
+  <label>Ukuran halaman
+    <select id="size">
+      <option value="a4">A4</option>
+      <option value="letter">Letter</option>
+      <option value="fit">Sesuai ukuran gambar</option>
+    </select>
+  </label>
+  <label>Margin
+    <select id="margin">
+      <option value="0">Tanpa margin</option>
+      <option value="10" selected>Sedang</option>
+      <option value="20">Lebar</option>
+    </select>
+  </label>
+  <label>Kompresi gambar
+    <select id="comp">
+      <option value="orig">Kualitas asli</option>
+      <option value="med" selected>Sedang (hemat ukuran)</option>
+      <option value="high">Tinggi (file kecil)</option>
+      <option value="max">Maksimal (file terkecil)</option>
+    </select>
+  </label>
+  <label>Nama file
+    <input id="name" type="text" value="gambar-gabungan">
+  </label>
+  <span class="sp"></span>
+  <button id="clear" type="button">Hapus semua</button>
+</div>
+
+<ul id="list"></ul>
+
+<div class="bar" id="go" hidden>
+  <button id="make" class="primary" type="button">Buat PDF</button>
+</div>
+<div class="prog" id="prog" role="progressbar" aria-label="Progres" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div id="progBar"></div></div>
+<p id="status" role="status" aria-live="polite"></p>
+<div class="done" id="done">
+  <b id="doneTitle"></b>
+  <p id="doneInfo" style="margin:4px 0 12px;color:var(--mute)"></p>
+  <button id="save" class="primary" type="button">Simpan PDF</button>
+</div>
+</main>
+
+<script>
+(function(){
+var items=[],uid=0,pdfBlob=null;
+var $=function(i){return document.getElementById(i)};
+var list=$('list'),statusEl=$('status');
+
+function setStatus(t,err){statusEl.textContent=t||'';statusEl.className=err?'err':''}
+function prog(f){
+  var p=$('prog');
+  if(f===null){p.hidden=true;return}
+  var v=Math.max(0,Math.min(100,Math.round(f*100)));
+  p.hidden=false;$('progBar').style.width=v+'%';p.setAttribute('aria-valuenow',v);
+}
+function fmt(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+
+function addFiles(fs){
+  var arr=Array.prototype.slice.call(fs).filter(function(f){return /^image\//.test(f.type)||/\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(f.name)});
+  if(!arr.length){setStatus('Tidak ada file gambar yang valid.',true);return}
+  var fresh=arr.map(function(f){return {id:++uid,file:f,url:URL.createObjectURL(f),rot:0,cdata:null,csize:0}});
+  fresh.forEach(function(it){items.push(it)});
+  setStatus('');resetDone();render();
+  compressAll(fresh);
+}
+
+var busy=0;
+function preset(){return {orig:{q:0.92,max:3000},med:{q:0.75,max:2000},high:{q:0.55,max:1400},max:{q:0.4,max:1000}}[$('comp').value]}
+async function compressAll(arr){
+  busy++;$('make').disabled=true;resetDone();
+  var P=preset(),n=arr.length;
+  for(var k=0;k<n;k++){
+    var it=arr[k];
+    if(items.indexOf(it)<0)continue;
+    setStatus('Mengompres gambar '+(k+1)+' dari '+n+'… '+Math.round(k/n*100)+'%');
+    prog(k/n);
+    try{
+      var im=await loadImg(it.url);
+      var w=im.naturalWidth||im.width||800,h=im.naturalHeight||im.height||600;
+      var sc=Math.min(1,P.max/Math.max(w,h)),cw=Math.round(w*sc),ch=Math.round(h*sc);
+      var c=document.createElement('canvas');c.width=cw;c.height=ch;
+      var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cw,ch);x.drawImage(im,0,0,cw,ch);
+      it.cdata=c.toDataURL('image/jpeg',P.q);
+      it.csize=Math.round((it.cdata.length-23)*3/4);
+      it.err=false;
+    }catch(e){it.cdata=null;it.csize=0;it.err=true}
+    prog((k+1)/n);
+    render();
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  busy--;
+  setTimeout(function(){if(!busy)prog(null)},600);
+  if(!busy){
+    $('make').disabled=false;
+    var ok=items.filter(function(i){return i.cdata}),bad=items.length-ok.length;
+    var o=ok.reduce(function(s,i){return s+i.file.size},0),z=ok.reduce(function(s,i){return s+i.csize},0);
+    if(bad)setStatus(bad+' gambar tidak bisa dibaca. Hapus lalu coba file lain.',true);
+    else if(ok.length&&z<o)setStatus('Gambar sudah dikompres: '+fmt(o)+' menjadi '+fmt(z)+' (hemat '+Math.round((1-z/o)*100)+'%).');
+    else if(ok.length)setStatus('Gambar sudah diproses ('+fmt(z)+'). Ukurannya sudah kecil, jadi hampir tidak berubah.');
+    else setStatus('');
+  }
+}
+function resetDone(){pdfBlob=null;$('done').classList.remove('show')}
+
+function render(){
+  list.innerHTML='';
+  items.forEach(function(it,i){
+    var li=document.createElement('li');li.draggable=true;li.dataset.i=i;
+    li.innerHTML='<span class="handle" aria-hidden="true">⠿</span><span class="pg"></span><img alt=""><div class="meta"><b></b><small></small></div><div class="acts"><button type="button" data-a="rl" aria-label="Putar kiri">⟲</button><button type="button" data-a="rr" aria-label="Putar kanan">⟳</button><button type="button" data-a="up" aria-label="Naik">↑</button><button type="button" data-a="down" aria-label="Turun">↓</button><button type="button" data-a="del" aria-label="Hapus">✕</button></div>';
+    li.querySelector('.pg').textContent=i+1;
+    var th=li.querySelector('img');th.src=it.cdata||it.url;th.style.transform='rotate('+it.rot+'deg)';th.style.transition='transform .2s';
+    li.querySelector('b').textContent=it.file.name;
+    li.querySelector('small').textContent=it.err?'Tidak bisa dibaca':it.cdata?fmt(it.file.size)+' → '+fmt(it.csize)+(it.csize<it.file.size?' (−'+Math.round((1-it.csize/it.file.size)*100)+'%)':''):fmt(it.file.size)+' · mengompres…';
+    list.appendChild(li);
+  });
+  var has=items.length>0;
+  $('opts').hidden=!has;$('go').hidden=!has;
+  $('make').textContent='Buat PDF ('+items.length+' halaman)';
+}
+
+list.addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var i=+b.closest('li').dataset.i,a=b.dataset.a;
+  if(a==='rl'){items[i].rot=(items[i].rot+270)%360}
+  else if(a==='rr'){items[i].rot=(items[i].rot+90)%360}
+  else if(a==='del'){URL.revokeObjectURL(items[i].url);items.splice(i,1)}
+  else if(a==='up'&&i>0){items.splice(i-1,0,items.splice(i,1)[0])}
+  else if(a==='down'&&i<items.length-1){items.splice(i+1,0,items.splice(i,1)[0])}
+  resetDone();render();
+});
+
+var dragI=null;
+list.addEventListener('dragstart',function(e){var li=e.target.closest('li');if(!li)return;dragI=+li.dataset.i;li.classList.add('drag');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain','x')}catch(_){}});
+list.addEventListener('dragover',function(e){if(dragI===null)return;e.preventDefault();var li=e.target.closest('li');[].forEach.call(list.children,function(c){c.classList.remove('target')});if(li)li.classList.add('target')});
+list.addEventListener('drop',function(e){if(dragI===null)return;e.preventDefault();var li=e.target.closest('li');if(li){var j=+li.dataset.i;items.splice(j,0,items.splice(dragI,1)[0]);resetDone()}dragI=null;render()});
+list.addEventListener('dragend',function(){dragI=null;render()});
+
+$('file').addEventListener('change',function(e){addFiles(e.target.files);e.target.value=''});
+var drop=$('drop');
+['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(e){if(dragI!==null)return;e.preventDefault();drop.classList.add('over')})});
+['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('over')})});
+drop.addEventListener('drop',function(e){if(e.dataTransfer&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
+$('clear').addEventListener('click',function(){items.forEach(function(it){URL.revokeObjectURL(it.url)});items=[];resetDone();setStatus('');render()});
+['size','margin','name'].forEach(function(id){$(id).addEventListener('input',resetDone)});
+$('comp').addEventListener('change',function(){if(items.length)compressAll(items.slice())});
+
+function loadImg(url){return new Promise(function(res,rej){var im=new Image();im.onload=function(){res(im)};im.onerror=function(){rej(new Error('load'))};im.src=url})}
+
+async function build(){
+  var JS=window.jspdf&&window.jspdf.jsPDF;
+  if(!JS)throw new Error('Pustaka PDF gagal dimuat. Muat ulang halaman dan coba lagi.');
+  var mode=$('size').value,m=+$('margin').value,px=0.264583,doc=null;
+  for(var i=0;i<items.length;i++){
+    setStatus('Menyusun halaman '+(i+1)+' dari '+items.length+'… '+Math.round(i/items.length*100)+'%');
+    prog(i/items.length);
+    var im;
+    try{im=await loadImg(items[i].cdata||items[i].url)}catch(e){throw new Error('Gambar "'+items[i].file.name+'" tidak bisa dibaca.')}
+    var w0=im.naturalWidth||im.width||800,h0=im.naturalHeight||im.height||600;
+    var rot=items[i].rot||0,swap=rot%180!==0;
+    var w=swap?h0:w0,h=swap?w0:h0;
+    var P={orig:{q:0.92,max:3000},med:{q:0.75,max:2000},high:{q:0.55,max:1400},max:{q:0.4,max:1000}}[$('comp').value];
+    var sc=items[i].cdata?1:Math.min(1,P.max/Math.max(w,h));
+    var cw=Math.round(w*sc),ch=Math.round(h*sc);
+    var c=document.createElement('canvas');c.width=cw;c.height=ch;
+    var ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cw,ch);
+    var iw=swap?ch:cw,ih=swap?cw:ch;
+    ctx.translate(cw/2,ch/2);ctx.rotate(rot*Math.PI/180);ctx.drawImage(im,-iw/2,-ih/2,iw,ih);
+    var data=(items[i].cdata&&!rot)?items[i].cdata:c.toDataURL('image/jpeg',P.q);
+    var pw,ph,orient;
+    if(mode==='fit'){pw=w*px;ph=h*px;m=0}
+    else{var base=mode==='letter'?[215.9,279.4]:[210,297];orient=w>h?'l':'p';pw=orient==='l'?base[1]:base[0];ph=orient==='l'?base[0]:base[1]}
+    orient=pw>ph?'l':'p';
+    if(!doc)doc=new JS({unit:'mm',format:[pw,ph],orientation:orient,compress:true});
+    else doc.addPage([pw,ph],orient);
+    var aw=pw-2*m,ah=ph-2*m,r=Math.min(aw/w,ah/h),dw=w*r,dh=h*r;
+    doc.addImage(data,'JPEG',(pw-dw)/2,(ph-dh)/2,dw,dh,undefined,'FAST');
+    m=+$('margin').value;
+    await new Promise(function(r){setTimeout(r,0)});
+  }
+  return doc.output('blob');
+}
+
+$('make').addEventListener('click',async function(){
+  if(!items.length||busy)return;
+  var btn=$('make');btn.disabled=true;resetDone();
+  try{
+    pdfBlob=await build();
+    setStatus('');
+    $('doneTitle').textContent='PDF siap';
+    var tot=items.reduce(function(s,it){return s+it.file.size},0);
+    var info=items.length+' halaman, '+fmt(pdfBlob.size);
+    if(pdfBlob.size<tot)info+=' (dari '+fmt(tot)+', hemat '+Math.round((1-pdfBlob.size/tot)*100)+'%)';
+    else info+=' (gambar asli '+fmt(tot)+'; coba kompresi lebih tinggi untuk memperkecil)';
+    $('doneInfo').textContent=info;
+    $('done').classList.add('show');
+    prog(1);
+  }catch(e){setStatus(e.message||'Gagal membuat PDF.',true)}
+  setTimeout(function(){if(!busy)prog(null)},600);
+  btn.disabled=false;
+});
+
+function fileName(){var n=($('name').value||'gambar-gabungan').replace(/[\\\/:*?"'<>|]+/g,'').trim()||'gambar-gabungan';return n.replace(/\.pdf$/i,'')+'.pdf'}
+
+$('save').addEventListener('click',async function(){
+  if(!pdfBlob)return;
+  var d=null;
+  try{d=window.claude&&await window.claude.use('downloads')}catch(_){}
+  try{
+    if(d){await d.save({filename:fileName(),data:pdfBlob});setStatus('PDF disimpan.')}
+    else{
+      var a=document.createElement('a');a.href=URL.createObjectURL(pdfBlob);a.download=fileName();document.body.appendChild(a);a.click();a.remove();
+      setStatus('Mengunduh PDF…');
+    }
+  }catch(e){
+    if(e&&e.code==='declined')setStatus('Penyimpanan dibatalkan.');
+    else setStatus('PDF tidak bisa disimpan di sini. Buka halaman ini di tab browser sendiri lalu coba lagi.',true);
+  }
+});
+render();
+})();
+</script>
+</body>
+</html>
