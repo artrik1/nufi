@@ -53,6 +53,7 @@ button.primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .meta{flex:1;min-width:0}
 .meta b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .meta small{color:var(--mute)}
+.chip:empty{display:none}
 .chip{flex:none;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bg);color:var(--mute)}
 .run .chip{background:var(--acc);color:#fff}
 .ok .chip{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
@@ -68,6 +69,12 @@ button.primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 #status.err{color:var(--err)}
 .done{display:none;margin-top:20px;background:var(--card);border:1px solid var(--ok);border-radius:18px;padding:18px;box-shadow:var(--sh)}
 .done.show{display:block}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin:-8px 0 22px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:.9rem;color:var(--mute);box-shadow:var(--sh)}
+.pill b{color:var(--ink);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 var(--ok);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
 </style>
 </head>
 <body>
@@ -76,7 +83,12 @@ button.primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
   <div class="logo" aria-hidden="true">PDF</div>
   <h1><span class="l">CAK IMAM</span><span class="r">PDF CONVERTER</span></h1>
 </div>
-<p class="sub">Gabungkan banyak gambar menjadi satu file PDF. Gambar dikompres satu per satu dari atas ke bawah. Semua diproses di perangkat Anda, tidak ada yang diunggah.</p>
+<p class="sub">Gabungkan banyak gambar menjadi satu file PDF. Gambar diproses satu per satu dari atas ke bawah, lalu hasil PDF-nya dikompres. Semua diproses di perangkat Anda, tidak ada yang diunggah.</p>
+
+<div class="stats">
+  <span class="pill"><span class="dot" aria-hidden="true"></span><b id="statOn">—</b> online sekarang</span>
+  <span class="pill"><b id="statDay">—</b> pengunjung hari ini</span>
+</div>
 
 <label id="drop">
   <input id="file" type="file" accept="image/*" multiple>
@@ -100,7 +112,7 @@ button.primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
       <option value="20">Lebar</option>
     </select>
   </label>
-  <label>Kompresi gambar
+  <label>Kompresi PDF
     <select id="comp">
       <option value="orig">Kualitas asli</option>
       <option value="med" selected>Sedang (hemat ukuran)</option>
@@ -147,59 +159,14 @@ function fmt(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.ro
 function addFiles(fs){
   var arr=Array.prototype.slice.call(fs).filter(function(f){return /^image\//.test(f.type)||/\.(jpe?g|png|webp|gif|bmp|svg)$/i.test(f.name)});
   if(!arr.length){setStatus('Tidak ada file gambar yang valid.',true);return}
-  var fresh=arr.map(function(f){return {id:++uid,file:f,url:URL.createObjectURL(f),rot:0,cdata:null,csize:0,st:'wait'}});
+  var fresh=arr.map(function(f){return {id:++uid,file:f,url:URL.createObjectURL(f),rot:0,cdata:null,csize:0,st:''}});
   fresh.forEach(function(it){items.push(it)});
   setStatus('');resetDone();render();
-  if(!running)runQueue();
 }
 
-var busy=0,running=false;
+var busy=0;
 function preset(){return {orig:{q:0.92,max:3000},med:{q:0.75,max:2000},high:{q:0.55,max:1400},max:{q:0.4,max:1000}}[$('comp').value]}
-function compressAll(){
-  /* antrean tunggal: file diproses satu per satu dari paling atas ke paling bawah */
-  var i;for(i=0;i<items.length;i++)if(items[i].st==='run')items[i].st='wait';
-  if(!running)runQueue();
-}
-async function runQueue(){
-  running=true;busy=1;$('make').disabled=true;resetDone();
-  while(true){
-    var it=null,done=0;
-    for(var k=0;k<items.length;k++){
-      if(items[k].st==='wait'&&!it)it=items[k];
-      if(items[k].st==='done'||items[k].st==='err')done++;
-    }
-    if(!it)break;
-    var total=items.length,pos=items.indexOf(it)+1;
-    it.st='run';render();
-    setStatus('Mengompres gambar '+pos+' dari '+total+': '+it.file.name);
-    prog(done/total);
-    await new Promise(function(r){setTimeout(r,30)});
-    var key=$('comp').value,P=preset();
-    try{
-      var im=await loadImg(it.url);
-      var w=im.naturalWidth||im.width||800,h=im.naturalHeight||im.height||600;
-      var sc=Math.min(1,P.max/Math.max(w,h)),cw=Math.round(w*sc),ch=Math.round(h*sc);
-      var c=document.createElement('canvas');c.width=cw;c.height=ch;
-      var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cw,ch);x.drawImage(im,0,0,cw,ch);
-      it.cdata=c.toDataURL('image/jpeg',P.q);
-      it.csize=Math.round((it.cdata.length-23)*3/4);
-      it.st='done';
-    }catch(e){it.cdata=null;it.csize=0;it.st='err'}
-    if(items.indexOf(it)>=0&&it.st!=='err'&&$('comp').value!==key)it.st='wait';
-    render();
-    await new Promise(function(r){setTimeout(r,0)});
-  }
-  running=false;busy=0;
-  prog(1);setTimeout(function(){if(!busy)prog(null)},600);
-  $('make').disabled=false;
-  var ok=items.filter(function(i){return i.cdata}),bad=items.length-ok.length;
-  var o=ok.reduce(function(s,i){return s+i.file.size},0),z=ok.reduce(function(s,i){return s+i.csize},0);
-  if(bad)setStatus(bad+' gambar tidak bisa dibaca. Hapus lalu coba file lain.',true);
-  else if(ok.length&&z<o)setStatus('Semua gambar sudah dikompres: '+fmt(o)+' menjadi '+fmt(z)+' (hemat '+Math.round((1-z/o)*100)+'%).');
-  else if(ok.length)setStatus('Semua gambar sudah diproses ('+fmt(z)+'). Ukurannya sudah kecil, jadi hampir tidak berubah.');
-  else setStatus('');
-}
-function resetDone(){pdfBlob=null;$('done').classList.remove('show')}
+function resetDone(){items.forEach(function(t){if(t.st!=='run')t.st=''});pdfBlob=null;$('done').classList.remove('show')}
 
 function render(){
   list.innerHTML='';
@@ -210,8 +177,8 @@ function render(){
     li.querySelector('.pg').textContent=i+1;
     var th=li.querySelector('img');th.src=it.cdata||it.url;th.style.transform='rotate('+it.rot+'deg)';th.style.transition='transform .2s';
     li.querySelector('b').textContent=it.file.name;
-    li.querySelector('.chip').textContent=it.st==='run'?'Memproses':it.st==='done'?'Selesai':it.st==='err'?'Gagal':'Menunggu';
-    li.querySelector('small').textContent=it.st==='err'?'Tidak bisa dibaca':it.cdata?fmt(it.file.size)+' → '+fmt(it.csize)+(it.csize<it.file.size?' (−'+Math.round((1-it.csize/it.file.size)*100)+'%)':''):fmt(it.file.size);
+    li.querySelector('.chip').textContent=it.st==='run'?'Memproses':it.st==='done'?'Selesai':it.st==='err'?'Gagal':it.st==='wait'?'Menunggu':'';
+    li.querySelector('small').textContent=it.st==='err'?'Tidak bisa dibaca':fmt(it.file.size);
     list.appendChild(li);
   });
   var has=items.length>0;
@@ -242,8 +209,8 @@ var drop=$('drop');
 ['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('over')})});
 drop.addEventListener('drop',function(e){if(e.dataTransfer&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
 $('clear').addEventListener('click',function(){items.forEach(function(it){URL.revokeObjectURL(it.url)});items=[];resetDone();setStatus('');render()});
-['size','margin','name'].forEach(function(id){$(id).addEventListener('input',resetDone)});
-$('comp').addEventListener('change',function(){items.forEach(function(it){if(it.st!=='run')it.st='wait'});if(items.length)compressAll()});
+['size','margin','name'].forEach(function(id){$(id).addEventListener('input',function(){resetDone();render()})});
+$('comp').addEventListener('change',function(){resetDone();render()});
 
 function loadImg(url){return new Promise(function(res,rej){var im=new Image();im.onload=function(){res(im)};im.onerror=function(){rej(new Error('load'))};im.src=url})}
 
@@ -251,11 +218,14 @@ async function build(){
   var JS=window.jspdf&&window.jspdf.jsPDF;
   if(!JS)throw new Error('Pustaka PDF gagal dimuat. Muat ulang halaman dan coba lagi.');
   var mode=$('size').value,m=+$('margin').value,px=0.264583,doc=null;
+  items.forEach(function(t){t.st='wait'});render();
   for(var i=0;i<items.length;i++){
-    setStatus('Menyusun halaman '+(i+1)+' dari '+items.length+'… '+Math.round(i/items.length*100)+'%');
+    items[i].st='run';render();
+    setStatus('Mengompres halaman '+(i+1)+' dari '+items.length+': '+items[i].file.name);
     prog(i/items.length);
+    await new Promise(function(r){setTimeout(r,30)});
     var im;
-    try{im=await loadImg(items[i].cdata||items[i].url)}catch(e){throw new Error('Gambar "'+items[i].file.name+'" tidak bisa dibaca.')}
+    try{im=await loadImg(items[i].cdata||items[i].url)}catch(e){items[i].st='err';render();throw new Error('Gambar "'+items[i].file.name+'" tidak bisa dibaca.')}
     var w0=im.naturalWidth||im.width||800,h0=im.naturalHeight||im.height||600;
     var rot=items[i].rot||0,swap=rot%180!==0;
     var w=swap?h0:w0,h=swap?w0:h0;
@@ -276,6 +246,7 @@ async function build(){
     var aw=pw-2*m,ah=ph-2*m,r=Math.min(aw/w,ah/h),dw=w*r,dh=h*r;
     doc.addImage(data,'JPEG',(pw-dw)/2,(ph-dh)/2,dw,dh,undefined,'FAST');
     m=+$('margin').value;
+    items[i].st='done';render();
     await new Promise(function(r){setTimeout(r,0)});
   }
   return doc.output('blob');
@@ -318,6 +289,29 @@ $('save').addEventListener('click',async function(){
   }
 });
 render();
+
+/* statistik pengunjung: online (room) dan unik harian (db) */
+(async function(){
+  var day=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'});
+  var C=window.claude;if(!C||!C.use)return;
+  var room=null,db=null,user=null;
+  try{room=await C.use('room')}catch(_){}
+  try{db=await C.use('db')}catch(_){}
+  try{user=await C.use('user')}catch(_){}
+  if(room){
+    try{room.onPeers(function(ch){$('statOn').textContent=Math.max(1,ch.peers.length)})}catch(_){}
+  }
+  if(db){
+    try{
+      var uid=null;
+      try{uid=user&&await user.id()}catch(_){}
+      if(!uid){try{uid=localStorage.getItem('vid');if(!uid){uid='g'+Math.random().toString(36).slice(2,12);localStorage.setItem('vid',uid)}}catch(_){uid='g'+Math.random().toString(36).slice(2,12)}}
+      var col=db.collection('visits');
+      col.where('d','==',day).onSnapshot(function(snap){$('statDay').textContent=snap.size},function(){});
+      await col.doc(day+'_'+uid).set({d:day,t:Date.now()});
+    }catch(_){}
+  }
+})();
 })();
 </script>
 </body>
